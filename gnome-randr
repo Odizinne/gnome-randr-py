@@ -717,17 +717,20 @@ class ConfigInfo:
             print(modes_to_str_pretty(m[1]))
 
     def print_short(self):
+        primary_status = {}
+
         for n in range(len(self.logical_monitors)):
             lm = self.logical_monitors[n]
             for m in lm[5]:
-                print('{}'.format(m[0]))
-            print('primary: {}'
-                  ''.format(bool_to_str(lm[4])))
-            #for m in lm[5]:
-            #    print('{}'.format(m[0]))
-            print()
+                primary_status[m[0]] = bool_to_str(lm[4])
+
         for m in self.monitors:
-            print("Adapter: " '{}'.format(m[0][0]))
+            adapter = m[0][0]
+            primary = primary_status.get(adapter, 'no')
+            primary_display = 'primary' if primary == 'yes' else ''
+            output = f"{adapter} connected {primary_display}".strip()
+            
+            print(output)
 
 def print_new_config(logical_monitors):
     print('new monitor configuration:')
