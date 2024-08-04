@@ -161,9 +161,14 @@ def trans_needs_w_h_swap(old_trans, new_trans):
         return False
 
 def mode_id_to_vals(mode_id):
-    w, h_rate = mode_id.split('x')
-    h, rate = h_rate.split('@')
-    return (int(w), int(h), float(rate))
+    w, h_rate_vrr = mode_id.split('x')
+    h, rate_vrr = h_rate_vrr.split('@')
+    if '+' in rate_vrr:
+        rate, vrr = rate_vrr.split('+')
+    else:
+        rate = rate_vrr
+        vrr = ''
+    return int(w), int(h), float(rate), bool(vrr == 'vrr')
 
 def find_best_matching_mode(monitors):
     matches = []
@@ -493,11 +498,11 @@ class ConfigInfo:
                 # contain all necessary information
                 monitor = self.get_monitor_by_output(output)
                 md = get_current_mode(monitor)
-                w, h, r = mode_id_to_vals(md[0])
+                w, h, r, vrr = mode_id_to_vals(md[0])
 
                 conf['monitor'] = monitor
                 conf['mode-info'] = md
-                # to later dectect changed config easier
+                # to later detect changed config easier
                 conf['old-mode-id'] = md[0]
                 conf['res'] = '{}x{}'.format(w, h)
                 conf['w'] = w
@@ -505,6 +510,7 @@ class ConfigInfo:
                 conf['rate'] = r
                 conf['scale'] = scale
                 conf['trans'] = lm[3]
+                conf['vrr'] = vrr
 
 
     def __init__(self, serial, monitors, logical_monitors, properties):
@@ -525,6 +531,7 @@ class ConfigInfo:
         conf['rate'] = 0.0
         conf['scale'] = 1.0
         conf['trans'] = 0
+        conf['vrr'] = False
 
     def update_output_config(self, requested_actions):
         for out, conf in requested_actions.output_config.items():
